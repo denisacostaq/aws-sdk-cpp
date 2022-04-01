@@ -78,14 +78,13 @@ namespace Aws
             }
 
 
-            Aws::Vector<unsigned char> EventStreamEncoder::EncodeAndSign(const Aws::Utils::Event::Message& msg)
+            Aws::Vector<uint8_t *> EventStreamEncoder::EncodeAndSign(const Aws::Utils::Event::Message& msg)
             {
                 aws_event_stream_message encoded = Encode(msg);
                 aws_event_stream_message signedMessage = Sign(&encoded);
 
-                const auto signedMessageLength = signedMessage.message_buffer ? aws_event_stream_message_total_length(&signedMessage) : 0;
-
-                Aws::Vector<unsigned char> outputBits(signedMessage.message_buffer, signedMessage.message_buffer + signedMessageLength);
+                const auto signedMessageLength = signedMessage.message_buffer.buffer ? aws_event_stream_message_total_length(&signedMessage) : 0;
+                Aws::Vector<uint8_t*> outputBits(signedMessage.message_buffer.len + signedMessageLength, signedMessage.message_buffer.buffer);
                 aws_event_stream_message_clean_up(&encoded);
                 aws_event_stream_message_clean_up(&signedMessage);
                 return outputBits;
@@ -110,7 +109,7 @@ namespace Aws
                     aws_event_stream_headers_list_cleanup(&headers);
                     // GCC 4.9.4 issues a warning with -Wextra if we simply do
                     // return {};
-                    aws_event_stream_message empty{nullptr, nullptr, 0};
+                    aws_event_stream_message empty{nullptr, aws_byte_buf{}};
                     return empty;
                 }
                 aws_event_stream_headers_list_cleanup(&headers);
@@ -119,9 +118,9 @@ namespace Aws
 
             aws_event_stream_message EventStreamEncoder::Sign(aws_event_stream_message* msg)
             {
-                const auto msglen = msg->message_buffer ? aws_event_stream_message_total_length(msg) : 0;
+                const auto msglen = msg->message_buffer.buffer ? aws_event_stream_message_total_length(msg) : 0;
                 Event::Message signedMessage;
-                signedMessage.WriteEventPayload(msg->message_buffer, msglen);
+                signedMessage.WriteEventPayload(msg->message_buffer.buffer, msglen);
 
                 assert(m_signer);
                 if (!m_signer->SignEventMessage(signedMessage, m_signatureSeed))
@@ -129,7 +128,7 @@ namespace Aws
                     AWS_LOGSTREAM_ERROR(TAG, "Failed to sign event message frame.");
                     // GCC 4.9.4 issues a warning with -Wextra if we simply do
                     // return {};
-                    aws_event_stream_message empty{nullptr, nullptr, 0};
+                    aws_event_stream_message empty{nullptr, aws_byte_buf{}};
                     return empty;
                 }
 
@@ -149,7 +148,7 @@ namespace Aws
                     aws_event_stream_headers_list_cleanup(&headers);
                     // GCC 4.9.4 issues a warning with -Wextra if we simply do
                     // return {};
-                    aws_event_stream_message empty{nullptr, nullptr, 0};
+                    aws_event_stream_message empty{nullptr, aws_byte_buf{}};
                     return empty;
                 }
                 aws_event_stream_headers_list_cleanup(&headers);

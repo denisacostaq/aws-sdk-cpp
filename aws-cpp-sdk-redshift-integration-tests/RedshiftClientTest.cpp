@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 #include <fstream>
+#include <thread>
 
 #include <aws/external/gtest.h>
 #include <aws/core/utils/DateTime.h>
