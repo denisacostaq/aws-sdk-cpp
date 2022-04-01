@@ -27,6 +27,7 @@
 #include <aws/core/utils/Outcome.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
 #include <future>
+#include <thread>
 #include <aws/redshift/model/CreateClusterSubnetGroupRequest.h>
 #include <aws/redshift/model/DescribeClusterSubnetGroupsRequest.h>
 #include <aws/redshift/model/DeleteClusterSubnetGroupRequest.h>

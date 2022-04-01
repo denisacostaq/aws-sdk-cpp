@@ -39,7 +39,7 @@ namespace Aws
                  * Encodes the input message in the event-stream binary format and signs the resulting bits.
                  * The signing is done via the signer member.
                  */
-                Aws::Vector<unsigned char> EncodeAndSign(const Aws::Utils::Event::Message& msg);
+                Aws::Vector<uint8_t *> EncodeAndSign(const Aws::Utils::Event::Message& msg);
             private:
                 aws_event_stream_message Encode(const Aws::Utils::Event::Message& msg);
                 aws_event_stream_message Sign(aws_event_stream_message* msg);
